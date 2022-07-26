@@ -33,9 +33,10 @@ env $(cat .env | xargs) bash -c 'docker-compose run --rm --entrypoint npm "$IMAG
 docker-compose up -d
 ```
 
-**Init composer**:
+**Init app**:
 ```
 env $(cat .env | xargs) bash -c 'docker-compose exec -w /local/www $IMAGE_NAME composer install'
+env $(cat .env | xargs) bash -c 'docker-compose exec -w /local/www $IMAGE_NAME php artisan key:generate'
 ```
 
 **Run initial migrations**: 
