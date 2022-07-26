@@ -68,3 +68,5 @@ Web UI available on 127.0.0.1:1080
 ## Troubleshooting
 
 If you have problems with node container start - remove www/node_modules directory if exists and follow "Install node modules" step.
+
+CORS: if you need add domain to CORS rules for static.* domain, add it to $AccessControlAllowOrigin map in docker/nginx/conf.d/static.conf and restart Nginx container. 
