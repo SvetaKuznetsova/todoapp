@@ -1,0 +1,9 @@
+[v3_req]
+keyUsage=digitalSignature
+basicConstraints=CA:false
+subjectKeyIdentifier = hash
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1=${ENV::APP_HOST}
+DNS.2=*.${ENV::APP_HOST}

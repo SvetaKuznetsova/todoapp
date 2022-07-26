@@ -1,0 +1,95 @@
+version: '3.6'
+services:
+  mail:
+    image: djfarrelly/maildev
+    restart: on-failure
+    ports:
+      - "1080:80"
+    container_name: "${IMAGE_NAME}-mail"
+  mysql:
+    image: mariadb:10.8
+    restart: on-failure
+    environment:
+      MYSQL_DATABASE: 'Pantheon'
+      MYSQL_ROOT_PASSWORD: 'root'
+    volumes:
+      - ./mysql/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    ports:
+      - '3306:3306'
+    expose:
+      - '3306'
+    container_name: "${IMAGE_NAME}-mysql"
+    tty: true
+  memcache:
+    image: memcached:alpine
+    ports:
+      - "11211:11211"
+    restart: on-failure
+    container_name: "${IMAGE_NAME}-memcache"
+  node:
+    image: node:latest
+    container_name: "${IMAGE_NAME}-node"
+    restart: on-failure
+    tty: true
+    volumes:
+      - ../www:/local/www
+    working_dir: /local/www
+    environment:
+      NODE_OPTIONS: "--openssl-legacy-provider"
+    entrypoint: ['npm', 'run', 'watch']
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+      args:
+        APP_HOST: ${APP_HOST}
+    environment:
+      - APP_ENV=${APP_ENV}
+    container_name: "${IMAGE_NAME}-nginx"
+    restart: "no"
+    ports:
+      - 80:80
+      - 443:443
+    expose:
+      - 80
+      - 443
+    volumes:
+      - ../www:/local/www
+      - ./nginx/conf.d:/etc/nginx/conf.d
+    links:
+      - app:php
+  app:
+    build: .
+    image: ${IMAGE_NAME}
+    container_name: "${IMAGE_NAME}-app"
+    ports:
+      - ":9000"
+    volumes:
+     - ../www:/local/www
+    user: www-data
+    tty: true
+    depends_on:
+      - mail
+      - mysql
+      - memcache
+    links:
+      - mail
+      - mysql
+      - memcache
+#  queue:
+#    image: ${IMAGE_NAME}
+#    user: "${CURRENT_USER:-0:0}"
+#    environment:
+#      STARTUP_DELAY: 5
+#    command: 'test -f && php /local/www/artisan queue:work --memory=64'
+#    ports: []
+#    container_name: ${IMAGE_NAME}-queue
+  cron:
+    image: ${IMAGE_NAME}
+    user: root
+    volumes:
+      - ../www:/local/www
+      - ./cron/etc/crontabs:/etc/crontabs
+    command: ['crond', '-f', '-l', '8']
+    container_name: "${IMAGE_NAME}-cron"
+    ports: []
