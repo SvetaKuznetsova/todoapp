@@ -20,12 +20,12 @@ docker-compose up --no-start
 
 **Install nodejs modules**: 
 ```
-env $(cat .env | xargs) bash -c 'docker-compose run --rm --entrypoint npm "$IMAGE_NAME-node" install'
+docker-compose run --rm --entrypoint npm node install
 ```
 
 **Apply security fixes to modules (if you want)**: 
 ```
-env $(cat .env | xargs) bash -c 'docker-compose run --rm --entrypoint npm "$IMAGE_NAME-node" audit fix'
+docker-compose run --rm --entrypoint npm node audit fix
 ```
 
 **Start containers**:
@@ -35,13 +35,13 @@ docker-compose up -d
 
 **Init app**:
 ```
-env $(cat .env | xargs) bash -c 'docker-compose exec -w /local/www $IMAGE_NAME composer install'
-env $(cat .env | xargs) bash -c 'docker-compose exec -w /local/www $IMAGE_NAME php artisan key:generate'
+docker-compose exec -w /local/www app composer install
+docker-compose exec -w /local/www app php artisan key:generate
 ```
 
 **Run initial migrations**: 
 ```
-env $(cat .env | xargs) bash -c 'docker-compose exec -w /local/www $IMAGE_NAME php artisan migrate:refresh --seed'
+docker-compose exec -w /local/www app php artisan migrate:refresh --seed
 ```
 
 **HTTPS**:
